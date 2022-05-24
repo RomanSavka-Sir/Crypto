@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  api:
+    build: .
+    depends_on:
+      - postgres
+    ports:
+      - '${PORT}:${PORT}'
+      - '9229:9229'
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    command: ['/usr/wait-for-it.sh', '${DB_HOST}:${DB_PORT}', '--', 'bash', '-c', 'npm run db:migration:run', 'npm run start:local']
+
+  postgres:
+    image: postgres:13
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - ./.db:/var/lib/postgresql/data
