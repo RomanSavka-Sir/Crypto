@@ -1,9 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-
-    testApplication(): void {
-        console.log('Hello World');
-    }
+  testApplication(): void {
+    console.log('Hello World');
+  }
 }

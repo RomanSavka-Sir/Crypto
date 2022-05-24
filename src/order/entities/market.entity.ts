@@ -1,26 +1,33 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryColumn, UpdateDateColumn } from "typeorm";
-import { Order } from "./order.entity";
-import { Trade } from "./trade.entity";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryColumn,
+  UpdateDateColumn
+} from 'typeorm';
+import { Order } from './order.entity';
+import { Trade } from './trade.entity';
 
 @Entity({
-    name: 'markets'
+  name: 'markets'
 })
 export class Market {
-    @PrimaryColumn()
-    id: string;
+  @PrimaryColumn()
+  id: string;
 
-    @Column()
-    status: string;
+  @Column()
+  status: string;
 
-    @OneToMany(() => Order, order => order.market)
-    orders: Order[];
+  @OneToMany(() => Order, (order) => order.market)
+  orders: Order[];
 
-    @OneToMany(() => Trade, trade => trade.market)
-    trades: Trade[]
+  @OneToMany(() => Trade, (trade) => trade.market)
+  trades: Trade[];
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

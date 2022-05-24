@@ -1,32 +1,39 @@
-import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Market } from "./market.entity";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn
+} from 'typeorm';
+import { Market } from './market.entity';
 
 @Entity({
-    name: 'trades'
+  name: 'trades'
 })
 export class Trade {
-    @PrimaryGeneratedColumn()
-    id: number;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-    @Column({ type: 'bigint' })
-    price: number;
+  @Column({ type: 'bigint' })
+  price: number;
 
-    @Column()
-    volume: number;
+  @Column()
+  volume: number;
 
-    @Column()
-    makerUserId: number;
+  @Column()
+  makerUserId: number;
 
-    @Column()
-    takerUserId: number;
+  @Column()
+  takerUserId: number;
 
-    @ManyToOne(() => Market, market => market.trades)
-    @JoinColumn({ name: 'marketId' })
-    market: Market;
+  @ManyToOne(() => Market, (market) => market.trades)
+  @JoinColumn({ name: 'marketId' })
+  market: Market;
 
-    @Column()
-    marketId: string;
+  @Column()
+  marketId: string;
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 }

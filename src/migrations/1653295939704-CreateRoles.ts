@@ -18,7 +18,9 @@ export class seedUserRoles1653047159570 implements MigrationInterface {
   public async down(queryRunner: QueryRunner): Promise<void> {
     for (const name of dataToSeed) {
       const roleName = name.toLowerCase();
-      await queryRunner.query(`DELETE FROM "roles" r WHERE r.id = '${roleName}'`);
+      await queryRunner.query(
+        `DELETE FROM "roles" r WHERE r.id = '${roleName}'`
+      );
     }
   }
 }

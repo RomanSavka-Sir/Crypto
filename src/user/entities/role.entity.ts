@@ -1,13 +1,13 @@
-import { Entity, OneToMany, PrimaryColumn } from "typeorm";
-import { UserRole } from "./user.role.entity";
+import { Entity, OneToMany, PrimaryColumn } from 'typeorm';
+import { UserRole } from './user.role.entity';
 
 @Entity({
-    name: 'roles'
+  name: 'roles'
 })
 export class Role {
-    @PrimaryColumn()
-    id: string;
+  @PrimaryColumn()
+  id: string;
 
-    @OneToMany(() => UserRole, userRole => userRole.role)
-    userRoles: UserRole[]
+  @OneToMany(() => UserRole, (userRole) => userRole.role)
+  userRoles: UserRole[];
 }

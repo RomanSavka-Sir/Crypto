@@ -1,4 +1,4 @@
 export enum MarketsEnum {
-    available = 'available',
-    unavailable = 'unavailable'
+  available = 'available',
+  unavailable = 'unavailable'
 }
