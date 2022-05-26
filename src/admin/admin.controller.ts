@@ -17,13 +17,13 @@ import { AdminService } from './admin.service';
 import { CreateManagerDto } from './dto/create.manager.dto';
 
 @ApiTags('admin')
+@ApiSecurity('accessToken')
 @Roles(RoleEnum.admin)
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('admin')
 export class AdminController {
   constructor(private adminService: AdminService) {}
 
-  @ApiSecurity('accessToken')
   @ApiOperation({ summary: 'create manager by admin' })
   @ApiResponse({ status: 200, type: TokenDto })
   @ApiBody({ type: CreateManagerDto })

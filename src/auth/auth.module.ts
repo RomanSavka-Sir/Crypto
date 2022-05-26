@@ -10,6 +10,7 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { Mailer } from 'src/shared/helpers/mailer';
 import { UserRole } from 'src/user/entities/user.role.entity';
+import { Photo } from 'src/shared/entities/photo.entity';
 require('dotenv').config();
 
 @Module({
@@ -18,7 +19,7 @@ require('dotenv').config();
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1d' }
     }),
-    TypeOrmModule.forFeature([User, UserRole]),
+    TypeOrmModule.forFeature([User, UserRole, Photo]),
     UserModule,
     PassportModule
   ],

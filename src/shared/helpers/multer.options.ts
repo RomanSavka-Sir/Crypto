@@ -29,6 +29,6 @@ export const multerOptions = {
   }),
   fileFilter: imageFileFilter,
   limits: {
-    fileSize: +process.env.MULTER_FILE_SIZE
+    fileSize: 15728640
   }
 };

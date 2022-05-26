@@ -4,6 +4,8 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import basicAuth from 'express-basic-auth';
 import { ValidationPipe } from '@nestjs/common';
+import { MarketDto } from './manager/dto/market.dto';
+import { PhotoDto } from './shared/dto/photo.dto';
 require('dotenv').config();
 
 async function bootstrap() {
@@ -39,7 +41,7 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config, {
-    extraModels: []
+    extraModels: [MarketDto, PhotoDto]
   });
   SwaggerModule.setup('docs', app, document);
 

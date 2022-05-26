@@ -19,6 +19,8 @@ import { Mailer } from 'src/shared/helpers/mailer';
 import { ConfirmEmailDto } from './dto/confirm.email.dto';
 import { UserRole } from 'src/user/entities/user.role.entity';
 import { UserService } from 'src/user/user.service';
+import { Photo } from 'src/shared/entities/photo.entity';
+import { PhotoStatusEnum } from 'src/shared/enums/photo.status.enum';
 require('dotenv').config();
 
 @Injectable()
@@ -29,6 +31,8 @@ export class AuthService {
     private userRepository: Repository<User>,
     @InjectRepository(UserRole)
     private userRolesRepository: Repository<UserRole>,
+    @InjectRepository(Photo)
+    private photoRepository: Repository<Photo>,
     private mailer: Mailer,
     private userService: UserService
   ) {}
@@ -52,19 +56,22 @@ export class AuthService {
   }
 
   async verification(userId: number, data: ValidationDto): Promise<void> {
-    const checkDateOfBirth = under18(data.dateOfBirth);
-    console.log(checkDateOfBirth);
+    try {
+      const checkDateOfBirth = under18(data.dateOfBirth);
 
-    if (!checkDateOfBirth) throw new BadRequestException('Validation failed');
+      if (!checkDateOfBirth) throw new Error();
 
-    const user = await this.userRepository
-      .createQueryBuilder()
-      .update(User)
-      .set({ ...data, status: UserStatusEnum.tier1 })
-      .where({ id: userId, status: UserStatusEnum.tier0 })
-      .execute();
+      const user = await this.userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({ ...data, status: UserStatusEnum.tier1 })
+        .where({ id: userId, status: UserStatusEnum.tier0 })
+        .execute();
 
-    if (!user.affected) {
+      if (!user.affected) {
+        throw new Error();
+      }
+    } catch {
       throw new BadRequestException('Validation failed');
     }
   }
@@ -78,7 +85,8 @@ export class AuthService {
         await transactionEntityManager.findOneOrFail(User, {
           where: {
             id: userId,
-            email: data.email
+            email: data.email,
+            status: UserStatusEnum.tier1
           }
         });
         const code = randomCode();
@@ -139,6 +147,43 @@ export class AuthService {
       );
     } catch {
       throw new BadRequestException('Confirmation email failed');
+    }
+  }
+
+  async uploadFile(userId: number, file): Promise<string> {
+    try {
+      const user = await this.userRepository.findOneOrFail({
+        where: {
+          id: userId,
+          status: UserStatusEnum.tier2
+        },
+        relations: ['photos']
+      });
+
+      if (user.photos.length > 0) {
+        user.photos.forEach((photo) => {
+          if (
+            photo.status === PhotoStatusEnum.approved ||
+            photo.status === PhotoStatusEnum.pending
+          )
+            throw new Error();
+        });
+      }
+
+      await this.photoRepository
+        .createQueryBuilder()
+        .insert()
+        .into(Photo)
+        .values({
+          status: PhotoStatusEnum.pending,
+          userId,
+          id: file.filename
+        })
+        .execute();
+
+      return 'File successfully uploaded';
+    } catch {
+      throw new BadRequestException('Uplode file was failed');
     }
   }
 }

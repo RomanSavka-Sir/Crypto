@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { UserRole } from './user.role.entity';
 import { GenerateEmailCode } from 'src/auth/entities/generate.email.code.entity';
+import { Photo } from 'src/shared/entities/photo.entity';
 
 @Entity({
   name: 'users'
@@ -47,9 +48,6 @@ export class User {
   phone?: string;
 
   @Column({ nullable: true })
-  photo?: string;
-
-  @Column({ nullable: true })
   dateOfBirth?: string;
 
   @Column({ default: false })
@@ -69,6 +67,9 @@ export class User {
     (generateEmailCode) => generateEmailCode.user
   )
   generateEmailCodes: GenerateEmailCode[];
+
+  @OneToMany(() => Photo, (photo) => photo.user)
+  photos: Photo[];
 
   @CreateDateColumn()
   createdAt: Date;
