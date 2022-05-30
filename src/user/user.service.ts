@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RegisterDto } from 'src/auth/dto/register.dto';
 import { RoleEnum } from 'src/shared/enums/role.enum';
@@ -11,6 +11,9 @@ import { GetMarketResponseDto } from 'src/manager/dto/get.market.response.dto';
 import { Market } from 'src/order/entities/market.entity';
 import { plainToClass } from 'class-transformer';
 import { MarketsEnum } from 'src/order/enums/markets.enum';
+import { GetUserResponseDto } from './dto/get.user.response.dto';
+import { UpdateUserDto } from './dto/update.user.dto';
+import { Role } from './entities/role.entity';
 
 @Injectable()
 export class UserService {
@@ -18,7 +21,9 @@ export class UserService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     @InjectRepository(Market)
-    private marketRepository: Repository<Market>
+    private marketRepository: Repository<Market>,
+    @InjectRepository(UserRole)
+    private userRolesRepository: Repository<UserRole>
   ) {}
 
   async findUserByEmail(email: string): Promise<User> {
@@ -54,7 +59,9 @@ export class UserService {
     });
   }
 
-  async getAllUsers(pagination: PaginationDto): Promise<GetMarketResponseDto> {
+  async getAllMarkets(
+    pagination: PaginationDto
+  ): Promise<GetMarketResponseDto> {
     const [markets, count] = await this.marketRepository.findAndCount({
       select: ['id', 'status', 'createdAt', 'updatedAt'],
       skip: pagination.offset,
@@ -66,5 +73,48 @@ export class UserService {
     });
 
     return plainToClass(GetMarketResponseDto, { count, markets });
+  }
+
+  async getuser(userId: number): Promise<GetUserResponseDto> {
+    const user = await this.userRepository.findOneOrFail({
+      where: {
+        id: userId
+      },
+      relations: ['balances']
+    });
+
+    return plainToClass(GetUserResponseDto, user, { strategy: 'excludeAll' });
+  }
+
+  async updateUser(
+    userId: number,
+    data: UpdateUserDto,
+    adminId?: number
+  ): Promise<GetUserResponseDto> {
+    try {
+      let role;
+
+      if (adminId) {
+        role = await this.userRolesRepository.findOneOrFail({
+          where: {
+            roleId: 'manager',
+            userId
+          }
+        });
+      }
+      const user = await this.userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({ ...data })
+        .where({ id: adminId ? role.userId : userId })
+        .returning(['id'])
+        .execute();
+
+      if (!user.affected) throw new Error();
+
+      return await this.getuser(user.raw[0].id);
+    } catch {
+      throw new BadRequestException('Update user(manager) was failed');
+    }
   }
 }

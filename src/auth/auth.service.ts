@@ -21,7 +21,7 @@ import { UserRole } from 'src/user/entities/user.role.entity';
 import { UserService } from 'src/user/user.service';
 import { Photo } from 'src/shared/entities/photo.entity';
 import { PhotoStatusEnum } from 'src/shared/enums/photo.status.enum';
-require('dotenv').config();
+import fs from 'fs';
 
 @Injectable()
 export class AuthService {
@@ -183,6 +183,11 @@ export class AuthService {
 
       return 'File successfully uploaded';
     } catch {
+      fs.unlink(`${process.env.MULTER_DIST}/${file.filename}`, (err) => {
+        if (err) {
+          console.error(err);
+        }
+      });
       throw new BadRequestException('Uplode file was failed');
     }
   }

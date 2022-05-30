@@ -11,7 +11,6 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { Mailer } from 'src/shared/helpers/mailer';
 import { UserRole } from 'src/user/entities/user.role.entity';
 import { Photo } from 'src/shared/entities/photo.entity';
-require('dotenv').config();
 
 @Module({
   imports: [

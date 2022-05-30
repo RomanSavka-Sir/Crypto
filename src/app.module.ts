@@ -11,7 +11,6 @@ import { ManagerModule } from './manager/manager.module';
 import { OrderModule } from './order/order.module';
 import { SharedModule } from './shared/shared.module';
 import { UserModule } from './user/user.module';
-require('dotenv').config();
 
 const { DB_PORT, DB_HOST, DB_USER, DB_NAME, DB_PASSWORD } = process.env;
 

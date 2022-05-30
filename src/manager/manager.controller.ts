@@ -5,13 +5,11 @@ import {
   Get,
   Post,
   Param,
-  ParseIntPipe,
   Res,
-  Body
+  Query
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import {
-  ApiBody,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -25,9 +23,8 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { GetMarketResponseDto } from './dto/get.market.response.dto';
 import { Pagination } from 'src/shared/decorators/pagination.decorator';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
-import { GetPhotoResponseDto } from 'src/shared/dto/get.photo.response.dto';
-import { UserIdDto } from 'src/user/dto/user.id.dto';
-import { ResponseError } from '@sendgrid/mail';
+import { SearchQueryDto } from './dto/search.query.dto';
+import { GetUsersResponseDto } from 'src/user/dto/get.users.response.dto';
 
 @ApiTags('manager')
 @ApiSecurity('accessToken')
@@ -48,22 +45,22 @@ export class ManagerController {
     return this.managerService.getAllMArkets(pagination);
   }
 
-  @ApiOperation({ summary: 'get all user photos' })
-  @ApiResponse({ status: 200 })
+  @ApiOperation({ summary: 'get all users' })
+  @ApiResponse({ status: 200, type: GetUsersResponseDto })
   @ApiQuery({ type: PaginationDto })
   @HttpCode(200)
-  @Get('allPhotos/:userId')
-  async getAllUserPhotos(
+  @Get('getAllUsers')
+  async getAllUsers(
     @Pagination() pagination: PaginationDto,
-    @Param('userId', ParseIntPipe) userId: number
-  ): Promise<GetPhotoResponseDto> {
-    return this.managerService.getAllUserPhotots(pagination, userId);
+    @Query() search: SearchQueryDto
+  ): Promise<GetUsersResponseDto> {
+    return this.managerService.getAllUsers(pagination, search);
   }
 
   @ApiOperation({ summary: 'get photo of user' })
   @ApiResponse({ status: 200 })
   @HttpCode(200)
-  @Get(':photoId')
+  @Get('/:photoId')
   async getUserPhoto(@Param('photoId') photoId: string, @Res() res) {
     return this.managerService.getUserPhoto(photoId, res);
   }
@@ -80,16 +77,23 @@ export class ManagerController {
   @ApiResponse({ status: 200 })
   @HttpCode(200)
   @Post('deactivateMarket/:marketId')
-  async deactivateMarket(@Param('marketId') marketId): Promise<string> {
+  async deactivateMarket(@Param('marketId') marketId: string): Promise<string> {
     return this.managerService.deactivateMarket(marketId);
   }
 
-  //   @ApiOperation({ summary: 'confirm user via photo' })
-  //   @ApiResponse({ status: 200 })
-  //   @ApiBody({ type: UserIdDto })
-  //   @HttpCode(200)
-  //   @Post('confirmUser')
-  //   async confirmUser(@Body() data: UserIdDto): Promise<string> {
-  //     return this.managerService.confirmUser(data);
-  //   }
+  @ApiOperation({ summary: 'confirm photo of user' })
+  @ApiResponse({ status: 200 })
+  @HttpCode(200)
+  @Post('confirmPhoto/:photoId')
+  async confirmPhoto(@Param('photoId') photoId: string): Promise<string> {
+    return this.managerService.confirmPhoto(photoId);
+  }
+
+  @ApiOperation({ summary: 'reject photot of user' })
+  @ApiResponse({ status: 200 })
+  @HttpCode(200)
+  @Post('rejectPhoto/:photoId')
+  async rejectPhoto(@Param('photoId') photoId: string): Promise<string> {
+    return this.managerService.rejectPhoto(photoId);
+  }
 }

@@ -1,6 +1,5 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-require('dotenv').config();
 
 export class createAdmin1653295939705 implements MigrationInterface {
   name = 'createAdmin1653295939705';

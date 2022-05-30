@@ -5,6 +5,7 @@ import { Order } from '../../order/entities/order.entity';
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,

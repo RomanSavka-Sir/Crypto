@@ -2,7 +2,6 @@ import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -28,7 +27,4 @@ export class Photo {
 
   @CreateDateColumn()
   createdAt: Date;
-
-  @DeleteDateColumn({ nullable: true })
-  deletedAt: Date;
 }

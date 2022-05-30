@@ -18,7 +18,6 @@ export class GetPhotoResponseDto extends BaseDTO {
         id: '234534533332-ddd.jpg',
         status: 'pending',
         createdAt: '2022-05-24 16:35:39.701Z',
-        deletedAt: '2022-05-24 18:35:39.701Z',
         userId: 1
       }
     ],

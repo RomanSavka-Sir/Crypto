@@ -105,7 +105,7 @@ export class AuthController {
 
   @ApiSecurity('accessToken')
   @ApiConsumes('multipart/form-data')
-  @ApiOperation({ summary: 'upload foto for validation account by user' })
+  @ApiOperation({ summary: 'upload photo for validation account by user' })
   @ApiResponse({ status: 200 })
   @ApiBody({ type: UploadFileInfoDto })
   @HttpCode(200)
@@ -113,10 +113,7 @@ export class AuthController {
   @UseInterceptors(FileInterceptor('image', multerOptions))
   @Post('upload')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  async uploadFile(
-    @GetUser() user: User,
-    @UploadedFile() file
-  ): Promise<string> {
+  async uploadFile(@GetUser() user: User, @UploadedFile() file): Promise<any> {
     return this.authService.uploadFile(user.id, file);
   }
 }

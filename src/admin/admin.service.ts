@@ -1,4 +1,8 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  BadRequestException
+} from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { AuthService } from 'src/auth/auth.service';
 import { TokenDto } from 'src/auth/dto/token.dto';
@@ -6,13 +10,23 @@ import { Mailer } from 'src/shared/helpers/mailer';
 import { UserService } from 'src/user/user.service';
 import { CreateManagerDto } from './dto/create.manager.dto';
 import RandExp from 'randexp';
+import { PaginationDto } from 'src/shared/dto/pagination.dto';
+import { GetManagersResponseDto } from 'src/manager/dto/get.managers.response.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserRole } from 'src/user/entities/user.role.entity';
+import { getManager, In, Repository } from 'typeorm';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class AdminService {
   constructor(
     private userService: UserService,
     private mailer: Mailer,
-    private authService: AuthService
+    private authService: AuthService,
+    @InjectRepository(UserRole)
+    private userRoleRepository: Repository<UserRole>,
+    @InjectRepository(User)
+    private userRepository: Repository<User>
   ) {}
 
   async createManager(
@@ -43,6 +57,76 @@ export class AdminService {
       return plainToClass(TokenDto, { token });
     } catch {
       throw new UnauthorizedException('Registration failed');
+    }
+  }
+
+  async getAllManagers(
+    pagination: PaginationDto
+  ): Promise<GetManagersResponseDto> {
+    const role = await this.userRoleRepository.find({
+      where: {
+        roleId: 'manager'
+      }
+    });
+
+    const managerIds = role.map((id) => id.userId);
+
+    const [managers, count] = await this.userRepository.findAndCount({
+      where: { id: In(managerIds) },
+      select: [
+        'id',
+        '2fa',
+        'countryOfBirth',
+        'countryOfResidence',
+        'createdAt',
+        'dateOfBirth',
+        'email',
+        'firstName',
+        'lastName',
+        'phone',
+        'status',
+        'updatedAt',
+        'userRoles'
+      ],
+      skip: pagination.offset,
+      take: pagination.limit,
+      order: { id: 'DESC' }
+    });
+
+    return plainToClass(
+      GetManagersResponseDto,
+      { count, managers },
+      { strategy: 'excludeAll' }
+    );
+  }
+
+  async deleteManager(managerId: number): Promise<string> {
+    try {
+      return await getManager().transaction(
+        async (transactionEntityManager) => {
+          const userRole = await transactionEntityManager
+            .createQueryBuilder()
+            .delete()
+            .from(UserRole)
+            .where({ userId: managerId })
+            .execute();
+
+          if (!userRole.affected) throw new Error();
+
+          const user = await transactionEntityManager
+            .createQueryBuilder()
+            .delete()
+            .from(User)
+            .where({ id: managerId })
+            .execute();
+
+          if (!user.affected) throw new Error();
+
+          return `user ${managerId} was successfully deleted`;
+        }
+      );
+    } catch {
+      throw new BadRequestException('Delete manager was failed');
     }
   }
 }
