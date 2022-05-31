@@ -10,8 +10,7 @@ module.exports = {
   username: DB_USER,
   password: DB_PASSWORD,
   database: DB_NAME,
-  synchronize: false,
-  migrations: ['dist/migrations/**/*.js'],
-  entities: ['dist/**/*.entity.js'],
+  migrations: ['src/migrations/*.ts'],
+  entities: ['src/**/entities/*.entity.ts'],
   cli: { migrationsDir: 'src/migrations' }
 };

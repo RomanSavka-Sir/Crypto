@@ -1,8 +1,8 @@
 import { MigrationInterface, QueryRunner } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 
-export class createAdmin1653295939705 implements MigrationInterface {
-  name = 'createAdmin1653295939705';
+export class CreateAdmin1653984777732 implements MigrationInterface {
+  name = 'CreateAdmin1653984777732';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     const password = await bcrypt.hash(`${process.env.ADMIN_PASSWORD}`, 10);

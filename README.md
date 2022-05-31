@@ -12,7 +12,7 @@ On command line, type in the following commands:
 
         $ npm run start:local - run project localy
 
-        $ npm run start:docker - run project via docker(right know don't work)
+        $ npm run start:docker - run project via docker
 
 For good work you shoul add .env file into this project with requirmants and scret keys.
 

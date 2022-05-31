@@ -11,7 +11,7 @@ services:
     volumes:
       - .:/usr/src/app
       - /usr/src/app/node_modules
-    command: ['/usr/wait-for-it.sh', '${DB_HOST}:${DB_PORT}', '--', 'bash', '-c', 'npm run db:migration:run', 'npm run start:local']
+    command: ['/usr/wait-for-it.sh', '${DB_HOST}:${DB_PORT}', '--', 'bash', '-c', 'npm run db:migration:run && npm run start:local']
 
   postgres:
     image: postgres:13

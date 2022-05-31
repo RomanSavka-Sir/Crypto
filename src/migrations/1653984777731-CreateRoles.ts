@@ -2,8 +2,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 const dataToSeed = ['admin', 'user', 'manager'];
 
-export class seedUserRoles1653047159570 implements MigrationInterface {
-  name = 'seedUserRoles1653047159570';
+export class CreateRoles1653984777731 implements MigrationInterface {
+  name = 'CreateRoles1653984777731';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     for (const name of dataToSeed) {

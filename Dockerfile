@@ -11,4 +11,4 @@ COPY . .
 COPY wait-for-it.sh /usr/wait-for-it.sh
 RUN chmod +x /usr/wait-for-it.sh
 
-CMD ["npm run start:local"]
+CMD ["npm run db:migration:run"]

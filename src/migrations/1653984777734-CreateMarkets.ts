@@ -2,8 +2,8 @@ import { MigrationInterface, QueryRunner } from 'typeorm';
 
 const dataToSeed = ['BTC-USD', 'BTC-UAH', 'USDT-USD', 'USDT-UAH'];
 
-export class createMarkets1653295939707 implements MigrationInterface {
-  name = 'createMarkets1653295939707';
+export class CreateMarkets1653984777734 implements MigrationInterface {
+  name = 'CreateMarkets1653984777734';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     for (const name of dataToSeed) {

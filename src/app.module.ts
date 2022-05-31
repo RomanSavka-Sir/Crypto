@@ -16,18 +16,15 @@ const { DB_PORT, DB_HOST, DB_USER, DB_NAME, DB_PASSWORD } = process.env;
 
 @Module({
   imports: [
-    TypeOrmModule.forRootAsync({
-      useFactory: async () =>
-        Object.assign(await getConnectionOptions(), {
-          type: 'postgres',
-          host: DB_HOST,
-          port: +DB_PORT,
-          username: DB_USER,
-          password: DB_PASSWORD,
-          database: DB_NAME,
-          autoLoadEntities: true,
-          logging: true
-        })
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: DB_HOST,
+      port: +DB_PORT,
+      username: DB_USER,
+      password: DB_PASSWORD,
+      database: DB_NAME,
+      autoLoadEntities: true,
+      logging: true
     }),
     MulterModule.register({
       dest: './uploads'

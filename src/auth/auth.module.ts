@@ -1,3 +1,4 @@
+import { GenerateEmailCode } from './entities/generate.email.code.entity';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -18,7 +19,7 @@ import { Photo } from 'src/shared/entities/photo.entity';
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: '1d' }
     }),
-    TypeOrmModule.forFeature([User, UserRole, Photo]),
+    TypeOrmModule.forFeature([User, UserRole, Photo, GenerateEmailCode]),
     UserModule,
     PassportModule
   ],

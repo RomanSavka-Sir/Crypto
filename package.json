@@ -7,12 +7,11 @@
     "build": "nest build",
     "start:local": "nest start --watch",
     "start:docker": "docker-compose up --build -V",
-    "typeorm:cli": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -f ./ormconfig.js",
-    "db:migration:generate": "npm run typeorm:cli migration:generate -- -d src/migrations -n",
-    "db:migration:create": "npm run typeorm:cli migration:create -- -d src/migrations -n",
-    "db:migration:run": "npm run typeorm:cli migration:run",
-    "db:migration:show": "npm run typeorm:cli migration:show",
-    "db:migration:revert": "npm run typeorm:cli migration:revert"
+    "typeorm:cli": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "db:migration:generate": "npm run typeorm:cli -- migration:generate -n",
+    "db:migration:run": "npm run typeorm:cli -- migration:run",
+    "db:migration:show": "npm run typeorm:cli  -- migration:show",
+    "db:migration:revert": "npm run typeorm:cli -- migration:revert"
   },
   "keywords": [],
   "author": "",
@@ -46,6 +45,7 @@
     "rxjs": "^7.5.5",
     "swagger-ui-express": "^4.4.0",
     "ts-node": "^10.7.0",
+    "tsconfig-paths": "^4.0.0",
     "typeorm": "^0.2.45",
     "typescript": "^4.6.4"
   },
