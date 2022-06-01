@@ -22,6 +22,9 @@ import { UserService } from 'src/user/user.service';
 import { Photo } from 'src/shared/entities/photo.entity';
 import { PhotoStatusEnum } from 'src/shared/enums/photo.status.enum';
 import fs from 'fs';
+import { ChangePasswordDto } from './dto/change.password.dto';
+import * as bcrypt from 'bcrypt';
+import { RoleEnum } from 'src/shared/enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -44,6 +47,8 @@ export class AuthService {
   async register({ email, password }: RegisterDto): Promise<TokenDto> {
     try {
       const user = await this.userService.createUser({ email, password });
+      console.log(user);
+      console.log(user.generatedMaps[0].id);
 
       const token = await this.generateAccessToken({
         id: String(user.generatedMaps[0].id)
@@ -189,6 +194,34 @@ export class AuthService {
         }
       });
       throw new BadRequestException('Uplode file was failed');
+    }
+  }
+
+  async changePassword(
+    data: ChangePasswordDto,
+    userId: number
+  ): Promise<string> {
+    data.password = await bcrypt.hash(data.password, 10);
+    try {
+      const role = await this.userRolesRepository.findOneOrFail({
+        where: {
+          userId,
+          roleId: RoleEnum.user
+        }
+      });
+
+      const user = await this.userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({ password: data.password })
+        .where({ id: userId })
+        .execute();
+
+      if (!user.affected) throw new Error();
+
+      return 'Password was changed successfully';
+    } catch {
+      throw new BadRequestException('Change password was failed');
     }
   }
 }

@@ -10,7 +10,6 @@ import { UserRolesDto } from './user/dto/user.roles.dto';
 import { BalanceDto } from './balance/dto/balance.dto';
 import { UserDto } from './user/dto/user.dto';
 import { ManagerDto } from './manager/dto/manager.dto';
-require('dotenv').config();
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -31,7 +30,6 @@ async function bootstrap() {
     .setTitle('Crypto')
     .setDescription('The crypto API description')
     .setVersion('1.0')
-    .addTag('crypto')
     .addBearerAuth(
       {
         type: 'http',
@@ -54,7 +52,11 @@ async function bootstrap() {
       ManagerDto
     ]
   });
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('docs', app, document, {
+    swaggerOptions: {
+      tagsSorter: 'alpha'
+    }
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

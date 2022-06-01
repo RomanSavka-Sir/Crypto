@@ -1,14 +1,15 @@
+import { Currency } from './../shared/entities/currency.entity';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Market } from 'src/order/entities/market.entity';
-import { Role } from './entities/role.entity';
 import { User } from './entities/user.entity';
 import { UserRole } from './entities/user.role.entity';
 import { UserController } from './user.controller';
 import { UserService } from './user.service';
+import { Role } from './entities/role.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, UserRole, Role, Market])],
+  imports: [TypeOrmModule.forFeature([User, UserRole, Role, Market, Currency])],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService]

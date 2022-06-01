@@ -1,3 +1,4 @@
+import { Currency } from './../shared/entities/currency.entity';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { RegisterDto } from 'src/auth/dto/register.dto';
@@ -13,7 +14,7 @@ import { plainToClass } from 'class-transformer';
 import { MarketsEnum } from 'src/order/enums/markets.enum';
 import { GetUserResponseDto } from './dto/get.user.response.dto';
 import { UpdateUserDto } from './dto/update.user.dto';
-import { Role } from './entities/role.entity';
+import { Balance } from 'src/balance/entities/balance.entity';
 
 @Injectable()
 export class UserService {
@@ -23,7 +24,9 @@ export class UserService {
     @InjectRepository(Market)
     private marketRepository: Repository<Market>,
     @InjectRepository(UserRole)
-    private userRolesRepository: Repository<UserRole>
+    private userRolesRepository: Repository<UserRole>,
+    @InjectRepository(Currency)
+    private currencyRepository: Repository<Currency>
   ) {}
 
   async findUserByEmail(email: string): Promise<User> {
@@ -54,6 +57,19 @@ export class UserService {
           roleId: adminId ? RoleEnum.manager : RoleEnum.user
         })
         .execute();
+
+      if (!adminId) {
+        const currency = await transactionEntityManager.find(Currency);
+
+        for (const data of currency) {
+          await transactionEntityManager
+            .createQueryBuilder()
+            .insert()
+            .into(Balance)
+            .values({ userId: user.generatedMaps[0].id, currency: data })
+            .execute();
+        }
+      }
 
       return user;
     });

@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import mailer from '@sendgrid/mail';
 import { MailerInterface } from '../interfaces/mailer.interface';
+
 require('dotenv').config();
 
 @Injectable()

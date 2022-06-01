@@ -31,6 +31,7 @@ import { RolesGuard } from 'src/shared/guards/role.guard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadFileInfoDto } from './dto/upload.file.info.dto';
 import { multerOptions } from 'src/shared/helpers/multer.options';
+import { ChangePasswordDto } from './dto/change.password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -115,5 +116,20 @@ export class AuthController {
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   async uploadFile(@GetUser() user: User, @UploadedFile() file): Promise<any> {
     return this.authService.uploadFile(user.id, file);
+  }
+
+  @ApiSecurity('accessToken')
+  @ApiOperation({ summary: 'change password' })
+  @ApiResponse({ status: 200 })
+  @ApiBody({ type: ChangePasswordDto })
+  @HttpCode(200)
+  @Roles(RoleEnum.user)
+  @Post('changePassword')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  async changePassword(
+    @Body() data: ChangePasswordDto,
+    @GetUser() user: User
+  ): Promise<string> {
+    return this.authService.changePassword(data, user.id);
   }
 }

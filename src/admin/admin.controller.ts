@@ -1,3 +1,4 @@
+import { AuthService } from 'src/auth/auth.service';
 import {
   Controller,
   Post,
@@ -21,6 +22,7 @@ import {
   ApiSecurity,
   ApiTags
 } from '@nestjs/swagger';
+import { ChangePasswordDto } from 'src/auth/dto/change.password.dto';
 import { TokenDto } from 'src/auth/dto/token.dto';
 import { GetManagersResponseDto } from 'src/manager/dto/get.managers.response.dto';
 import { GetMarketResponseDto } from 'src/manager/dto/get.market.response.dto';
@@ -49,7 +51,8 @@ export class AdminController {
   constructor(
     private adminService: AdminService,
     private userService: UserService,
-    private managerService: ManagerService
+    private managerService: ManagerService,
+    private authService: AuthService
   ) {}
 
   @ApiOperation({ summary: 'get all managers' })
@@ -136,6 +139,31 @@ export class AdminController {
   @Post('rejectPhoto/:photoId')
   async rejectPhoto(@Param('photoId') photoId: string): Promise<string> {
     return this.managerService.rejectPhoto(photoId);
+  }
+
+  @ApiOperation({ summary: 'change password of user' })
+  @ApiResponse({ status: 200 })
+  @ApiBody({ type: ChangePasswordDto })
+  @HttpCode(200)
+  @Post('changeUserPassword/:userId')
+  async changeUserPassword(
+    @Body() data: ChangePasswordDto,
+    @Param('userId') userId: number
+  ): Promise<string> {
+    return this.authService.changePassword(data, userId);
+  }
+
+  @ApiOperation({ summary: 'change password of maanger' })
+  @ApiResponse({ status: 200 })
+  @ApiBody({ type: ChangePasswordDto })
+  @HttpCode(200)
+  @Post('changeManagerPassword/:managerId')
+  async changeManagerPassword(
+    @Body() data: ChangePasswordDto,
+    @Param('managerId') managerId: number,
+    @GetUser() admin: User
+  ): Promise<string> {
+    return this.adminService.changeManagerPassword(data, managerId);
   }
 
   @ApiOperation({ summary: 'update manager' })

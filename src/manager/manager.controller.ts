@@ -1,3 +1,4 @@
+import { AuthService } from 'src/auth/auth.service';
 import {
   Controller,
   UseGuards,
@@ -6,10 +7,12 @@ import {
   Post,
   Param,
   Res,
-  Query
+  Query,
+  Body
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import {
+  ApiBody,
   ApiOperation,
   ApiQuery,
   ApiResponse,
@@ -25,6 +28,9 @@ import { Pagination } from 'src/shared/decorators/pagination.decorator';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { SearchQueryDto } from './dto/search.query.dto';
 import { GetUsersResponseDto } from 'src/user/dto/get.users.response.dto';
+import { ChangePasswordDto } from 'src/auth/dto/change.password.dto';
+import { GetUser } from 'src/shared/decorators/get.user.decorator';
+import { User } from 'src/user/entities/user.entity';
 
 @ApiTags('manager')
 @ApiSecurity('accessToken')
@@ -32,7 +38,10 @@ import { GetUsersResponseDto } from 'src/user/dto/get.users.response.dto';
 @UseGuards(AuthGuard('jwt'), RolesGuard)
 @Controller('manager')
 export class ManagerController {
-  constructor(private managerService: ManagerService) {}
+  constructor(
+    private managerService: ManagerService,
+    private authService: AuthService
+  ) {}
 
   @ApiOperation({ summary: 'get all markets' })
   @ApiResponse({ status: 200, type: GetMarketResponseDto })
@@ -95,5 +104,17 @@ export class ManagerController {
   @Post('rejectPhoto/:photoId')
   async rejectPhoto(@Param('photoId') photoId: string): Promise<string> {
     return this.managerService.rejectPhoto(photoId);
+  }
+
+  @ApiOperation({ summary: 'change password of user' })
+  @ApiResponse({ status: 200 })
+  @ApiBody({ type: ChangePasswordDto })
+  @HttpCode(200)
+  @Post('changeUserPassword/:userId')
+  async changeUserPassword(
+    @Body() data: ChangePasswordDto,
+    @Param('userId') userId: number
+  ): Promise<string> {
+    return this.authService.changePassword(data, userId);
   }
 }

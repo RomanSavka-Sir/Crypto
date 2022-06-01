@@ -16,6 +16,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserRole } from 'src/user/entities/user.role.entity';
 import { getManager, In, Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
+import { ChangePasswordDto } from 'src/auth/dto/change.password.dto';
+import * as bcrypt from 'bcrypt';
+import { RoleEnum } from 'src/shared/enums/role.enum';
 
 @Injectable()
 export class AdminService {
@@ -127,6 +130,34 @@ export class AdminService {
       );
     } catch {
       throw new BadRequestException('Delete manager was failed');
+    }
+  }
+
+  async changeManagerPassword(
+    data: ChangePasswordDto,
+    userId: number
+  ): Promise<string> {
+    data.password = await bcrypt.hash(data.password, 10);
+    try {
+      const role = await this.userRoleRepository.findOneOrFail({
+        where: {
+          userId,
+          roleId: RoleEnum.manager
+        }
+      });
+
+      const user = await this.userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({ password: data.password })
+        .where({ id: userId })
+        .execute();
+
+      if (!user.affected) throw new Error();
+
+      return 'Password was changed successfully';
+    } catch {
+      throw new BadRequestException('Change password was failed');
     }
   }
 }

@@ -1,6 +1,8 @@
+import { RoleEnum } from 'src/shared/enums/role.enum';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToClass } from 'class-transformer';
+import { ChangePasswordDto } from 'src/auth/dto/change.password.dto';
 import { Market } from 'src/order/entities/market.entity';
 import { MarketsEnum } from 'src/order/enums/markets.enum';
 import { PaginationDto } from 'src/shared/dto/pagination.dto';
