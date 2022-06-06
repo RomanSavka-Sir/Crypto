@@ -160,8 +160,7 @@ export class AdminController {
   @Post('changeManagerPassword/:managerId')
   async changeManagerPassword(
     @Body() data: ChangePasswordDto,
-    @Param('managerId') managerId: number,
-    @GetUser() admin: User
+    @Param('managerId') managerId: number
   ): Promise<string> {
     return this.adminService.changeManagerPassword(data, managerId);
   }
@@ -187,5 +186,16 @@ export class AdminController {
     @Param('managerId', ParseIntPipe) managerId: number
   ): Promise<string> {
     return this.adminService.deleteManager(managerId);
+  }
+
+  @ApiOperation({ summary: 'turn off 2fa for user' })
+  @ApiResponse({ status: 200 })
+  @HttpCode(200)
+  @Post('turnOff2fa/:userId')
+  async turnOff2faForUser(
+    @Param('userId', ParseIntPipe) userId: number,
+    @GetUser() admin: User
+  ): Promise<string> {
+    return this.authService.turnOff2fa(userId, admin.id);
   }
 }

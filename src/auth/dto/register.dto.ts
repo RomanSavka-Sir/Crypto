@@ -2,8 +2,8 @@ import {
   IsEmail,
   IsNotEmpty,
   IsString,
-  Length,
-  Matches
+  Matches,
+  MinLength
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
@@ -17,9 +17,11 @@ export class RegisterDto {
 
   @ApiProperty({ description: 'user password', example: 'Admin1user' })
   @IsString()
-  @Length(10)
-  @Matches(/^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z]).{10}$/, {
-    message: 'Password too weak'
+  @MinLength(10, {
+    message: 'Password is too short'
+  })
+  @Matches(/^(?=.*[0-9])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message: 'Password is  too weak'
   })
   @IsNotEmpty()
   password: string;

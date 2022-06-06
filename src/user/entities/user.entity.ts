@@ -54,6 +54,9 @@ export class User {
   @Column({ default: false })
   ['2fa']: boolean;
 
+  @Column({ nullable: true })
+  code2fa: string;
+
   @OneToMany(() => UserRole, (userRole) => userRole.user)
   userRoles: UserRole[];
 

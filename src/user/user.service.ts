@@ -1,3 +1,4 @@
+import { SmsSender } from 'src/shared/helpers/twilio.sms.sender';
 import { Currency } from './../shared/entities/currency.entity';
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -15,6 +16,9 @@ import { MarketsEnum } from 'src/order/enums/markets.enum';
 import { GetUserResponseDto } from './dto/get.user.response.dto';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { Balance } from 'src/balance/entities/balance.entity';
+import { TurnOn2faDto } from './dto/turn.on.2fa.dto';
+import RandExp from 'randexp';
+import { encrypt } from 'src/shared/helpers/crypto';
 
 @Injectable()
 export class UserService {
@@ -26,7 +30,8 @@ export class UserService {
     @InjectRepository(UserRole)
     private userRolesRepository: Repository<UserRole>,
     @InjectRepository(Currency)
-    private currencyRepository: Repository<Currency>
+    private currencyRepository: Repository<Currency>,
+    private smsSender: SmsSender
   ) {}
 
   async findUserByEmail(email: string): Promise<User> {

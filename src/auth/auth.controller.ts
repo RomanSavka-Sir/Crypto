@@ -1,3 +1,5 @@
+import { VerifiedEmailGuard } from './../shared/guards/verified.email.guard';
+import { TokenDto } from 'src/auth/dto/token.dto';
 import {
   Controller,
   Post,
@@ -17,9 +19,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
-import { TokenDto } from './dto/token.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { plainToClass } from 'class-transformer';
 import { GetUser } from 'src/shared/decorators/get.user.decorator';
 import { User } from 'src/user/entities/user.entity';
 import { ValidationDto } from './dto/validation.dto';
@@ -32,6 +32,8 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { UploadFileInfoDto } from './dto/upload.file.info.dto';
 import { multerOptions } from 'src/shared/helpers/multer.options';
 import { ChangePasswordDto } from './dto/change.password.dto';
+import { InputData2faDto } from './dto/input.data.2fa.dto';
+import { TurnOn2faDto } from 'src/user/dto/turn.on.2fa.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -53,10 +55,8 @@ export class AuthController {
   @HttpCode(200)
   @Post('login')
   @UseGuards(AuthGuard('local'))
-  async login(@GetUser() user: User): Promise<TokenDto> {
-    return plainToClass(TokenDto, {
-      token: await this.authService.generateAccessToken({ id: String(user.id) })
-    });
+  async login(@GetUser() user: User): Promise<TokenDto | string> {
+    return this.authService.login(user.id);
   }
 
   @ApiSecurity('accessToken')
@@ -113,7 +113,7 @@ export class AuthController {
   @Roles(RoleEnum.user)
   @UseInterceptors(FileInterceptor('image', multerOptions))
   @Post('upload')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(AuthGuard('jwt'), RolesGuard, VerifiedEmailGuard)
   async uploadFile(@GetUser() user: User, @UploadedFile() file): Promise<any> {
     return this.authService.uploadFile(user.id, file);
   }
@@ -125,11 +125,66 @@ export class AuthController {
   @HttpCode(200)
   @Roles(RoleEnum.user)
   @Post('changePassword')
-  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @UseGuards(AuthGuard('jwt'), RolesGuard, VerifiedEmailGuard)
   async changePassword(
     @Body() data: ChangePasswordDto,
     @GetUser() user: User
   ): Promise<string> {
     return this.authService.changePassword(data, user.id);
+  }
+
+  @ApiOperation({ summary: '2fa authentication' })
+  @ApiResponse({ status: 200 })
+  @ApiBody({ type: InputData2faDto })
+  @HttpCode(200)
+  @Roles(RoleEnum.user)
+  @Post('2fa')
+  @UseGuards(AuthGuard('2fa'), RolesGuard, VerifiedEmailGuard)
+  async twoFactorVerification(
+    @GetUser() user: User,
+    @Body() data: InputData2faDto
+  ): Promise<TokenDto> {
+    return this.authService.twoFactorConfirmation(user.id, data);
+  }
+
+  @ApiSecurity('accessToken')
+  @ApiOperation({ summary: 'turn on 2fa' })
+  @ApiResponse({ status: 200 })
+  @ApiBody({ type: TurnOn2faDto })
+  @HttpCode(200)
+  @Roles(RoleEnum.user)
+  @Post('turnOn2fa')
+  @UseGuards(AuthGuard('jwt'), RolesGuard, VerifiedEmailGuard)
+  async turnOn2fa(
+    @GetUser() user: User,
+    @Body() data: TurnOn2faDto
+  ): Promise<void> {
+    return this.authService.twoFactorVerification(user.id, data.phone);
+  }
+
+  @ApiSecurity('accessToken')
+  @ApiOperation({ summary: 'confirm phone for 2fa' })
+  @ApiResponse({ status: 200 })
+  @ApiBody({ type: TurnOn2faDto })
+  @HttpCode(200)
+  @Roles(RoleEnum.user)
+  @Post('confirmPhone2fa')
+  @UseGuards(AuthGuard(['jwt', '2fa']), RolesGuard, VerifiedEmailGuard)
+  async confirmPhone2fa(
+    @GetUser() user: User,
+    @Body() data: InputData2faDto
+  ): Promise<string> {
+    return this.authService.confirmPhone2fa(user.id, data);
+  }
+
+  @ApiSecurity('accessToken')
+  @ApiOperation({ summary: 'turn off 2fa' })
+  @ApiResponse({ status: 200 })
+  @HttpCode(200)
+  @Roles(RoleEnum.user)
+  @Post('turnOff2fa')
+  @UseGuards(AuthGuard('jwt'), RolesGuard, VerifiedEmailGuard)
+  async turnOff2fa(@GetUser() user: User): Promise<string> {
+    return this.authService.turnOff2fa(user.id);
   }
 }

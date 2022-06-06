@@ -8,7 +8,8 @@ import {
   Param,
   Res,
   Query,
-  Body
+  Body,
+  ParseIntPipe
 } from '@nestjs/common';
 import { ManagerService } from './manager.service';
 import {
@@ -113,8 +114,19 @@ export class ManagerController {
   @Post('changeUserPassword/:userId')
   async changeUserPassword(
     @Body() data: ChangePasswordDto,
-    @Param('userId') userId: number
+    @Param('userId', ParseIntPipe) userId: number
   ): Promise<string> {
     return this.authService.changePassword(data, userId);
+  }
+
+  @ApiOperation({ summary: 'turn off 2fa for user' })
+  @ApiResponse({ status: 200 })
+  @HttpCode(200)
+  @Post('turnOff2fa/:userId')
+  async turnOff2faForUser(
+    @Param('userId', ParseIntPipe) userId: number,
+    @GetUser() manager: User
+  ): Promise<string> {
+    return this.authService.turnOff2fa(userId, manager.id);
   }
 }

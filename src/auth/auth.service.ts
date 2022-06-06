@@ -25,6 +25,13 @@ import fs from 'fs';
 import { ChangePasswordDto } from './dto/change.password.dto';
 import * as bcrypt from 'bcrypt';
 import { RoleEnum } from 'src/shared/enums/role.enum';
+import RandExp from 'randexp';
+import { SmsSender } from 'src/shared/helpers/twilio.sms.sender';
+import { encrypt, decrypt } from 'src/shared/helpers/crypto';
+import { InputData2faDto } from './dto/input.data.2fa.dto';
+import { TurnOn2faDto } from 'src/user/dto/turn.on.2fa.dto';
+
+require('dotenv').config();
 
 @Injectable()
 export class AuthService {
@@ -37,7 +44,8 @@ export class AuthService {
     @InjectRepository(Photo)
     private photoRepository: Repository<Photo>,
     private mailer: Mailer,
-    private userService: UserService
+    private userService: UserService,
+    private smsSender: SmsSender
   ) {}
 
   async generateAccessToken(payload: { id: string }): Promise<string> {
@@ -47,8 +55,6 @@ export class AuthService {
   async register({ email, password }: RegisterDto): Promise<TokenDto> {
     try {
       const user = await this.userService.createUser({ email, password });
-      console.log(user);
-      console.log(user.generatedMaps[0].id);
 
       const token = await this.generateAccessToken({
         id: String(user.generatedMaps[0].id)
@@ -58,6 +64,24 @@ export class AuthService {
     } catch {
       throw new UnauthorizedException('Registration failed');
     }
+  }
+
+  async login(userId: number): Promise<TokenDto | string> {
+    const role = await this.userRolesRepository.findOne({
+      where: {
+        userId,
+        roleId: RoleEnum.user
+      }
+    });
+
+    if (role) {
+      await this.twoFactorVerification(userId);
+      return 'Success';
+    }
+
+    return plainToClass(TokenDto, {
+      token: await this.generateAccessToken({ id: String(userId) })
+    });
   }
 
   async verification(userId: number, data: ValidationDto): Promise<void> {
@@ -203,7 +227,7 @@ export class AuthService {
   ): Promise<string> {
     data.password = await bcrypt.hash(data.password, 10);
     try {
-      const role = await this.userRolesRepository.findOneOrFail({
+      await this.userRolesRepository.findOneOrFail({
         where: {
           userId,
           roleId: RoleEnum.user
@@ -223,5 +247,101 @@ export class AuthService {
     } catch {
       throw new BadRequestException('Change password was failed');
     }
+  }
+
+  async twoFactorAuth(userId: number, data: InputData2faDto): Promise<void> {
+    const user = await this.userRepository.findOne(userId);
+
+    const code = decrypt(
+      process.env.SECRET_TOKEN,
+      process.env.SECRET_IV,
+      user.code2fa
+    );
+
+    if (data.code !== code) {
+      throw new BadRequestException('Two factor authentication was failed');
+    }
+  }
+
+  async twoFactorConfirmation(
+    userId: number,
+    data: InputData2faDto
+  ): Promise<TokenDto> {
+    await this.twoFactorAuth(userId, data);
+
+    return plainToClass(TokenDto, {
+      token: await this.generateAccessToken({ id: String(userId) })
+    });
+  }
+
+  async twoFactorVerification(
+    userId: number,
+    phoneNumber?: string
+  ): Promise<void> {
+    try {
+      const user = await this.userRepository.findOne(userId);
+
+      const code = new RandExp(/^(?=.*[0-9])(?=.*[a-z]).{6}$/).gen();
+
+      const update = await this.userRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({
+          code2fa: encrypt(
+            process.env.SECRET_TOKEN,
+            process.env.SECRET_IV,
+            code
+          )
+        })
+        .where({ id: userId, phone: phoneNumber ? phoneNumber : user.phone })
+        .returning(['phone'])
+        .execute();
+
+      if (!update.affected) throw new Error();
+
+      await this.smsSender.sendSMS(code, update.raw[0].phone);
+    } catch {
+      throw new BadRequestException('Two factor verification was failed');
+    }
+  }
+
+  async confirmPhone2fa(
+    userId: number,
+    data: InputData2faDto
+  ): Promise<string> {
+    await this.twoFactorAuth(userId, data);
+
+    const user = await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ ['2fa']: true })
+      .where({ ['2fa']: false, id: userId })
+      .execute();
+
+    if (!user.affected) throw new BadRequestException('Turn on 2fa was failed');
+
+    return 'Success';
+  }
+
+  async turnOff2fa(userId: number, adminId?: number): Promise<string> {
+    if (adminId)
+      await this.userRolesRepository.findOneOrFail({
+        where: {
+          userId,
+          roleId: RoleEnum.user
+        }
+      });
+
+    const user = await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({ ['2fa']: false })
+      .where({ ['2fa']: true, id: userId })
+      .execute();
+
+    if (!user.affected)
+      throw new BadRequestException('Turn off 2fa was failed');
+
+    return 'Turn off 2fa was successfully';
   }
 }

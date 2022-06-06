@@ -1,3 +1,4 @@
+import { SharedModule } from './../shared/shared.module';
 import { GenerateEmailCode } from './entities/generate.email.code.entity';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
@@ -12,6 +13,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { Mailer } from 'src/shared/helpers/mailer';
 import { UserRole } from 'src/user/entities/user.role.entity';
 import { Photo } from 'src/shared/entities/photo.entity';
+import { TwoFactorStrategy } from './strategies/two.factor.strategy';
 
 require('dotenv').config();
 
@@ -23,10 +25,17 @@ require('dotenv').config();
     }),
     TypeOrmModule.forFeature([User, UserRole, Photo, GenerateEmailCode]),
     UserModule,
-    PassportModule
+    PassportModule,
+    SharedModule
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, Mailer],
+  providers: [
+    AuthService,
+    LocalStrategy,
+    JwtStrategy,
+    Mailer,
+    TwoFactorStrategy
+  ],
   exports: [AuthService, PassportModule]
 })
 export class AuthModule {}

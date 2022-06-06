@@ -139,7 +139,7 @@ export class AdminService {
   ): Promise<string> {
     data.password = await bcrypt.hash(data.password, 10);
     try {
-      const role = await this.userRoleRepository.findOneOrFail({
+      await this.userRoleRepository.findOneOrFail({
         where: {
           userId,
           roleId: RoleEnum.manager

@@ -1,9 +1,12 @@
+import { VerifiedUserGuard } from './../shared/guards/verified.user.guard';
+import { VerifiedEmailGuard } from './../shared/guards/verified.email.guard';
 import {
   Controller,
   UseGuards,
   HttpCode,
   Get,
   Patch,
+  Post,
   Body
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -30,7 +33,7 @@ import { UserService } from './user.service';
 @ApiTags('user')
 @ApiSecurity('accessToken')
 @Roles(RoleEnum.user)
-@UseGuards(AuthGuard('jwt'), RolesGuard)
+@UseGuards(AuthGuard('jwt'), RolesGuard, VerifiedEmailGuard)
 @Controller('user')
 export class UserController {
   constructor(private userService: UserService) {}
