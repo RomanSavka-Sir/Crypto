@@ -1,4 +1,3 @@
-import { VerifiedUserGuard } from './../shared/guards/verified.user.guard';
 import { VerifiedEmailGuard } from './../shared/guards/verified.email.guard';
 import {
   Controller,
@@ -6,7 +5,6 @@ import {
   HttpCode,
   Get,
   Patch,
-  Post,
   Body
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';

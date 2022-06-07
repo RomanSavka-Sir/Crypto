@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { InjectTwilio, TwilioClient } from 'nestjs-twilio';
 
 require('dotenv').config();
@@ -15,7 +15,8 @@ export class SmsSender {
         to: phone
       });
     } catch (e) {
-      return e;
+      console.log(e);
+      throw new Error('Send code was failed');
     }
   }
 }

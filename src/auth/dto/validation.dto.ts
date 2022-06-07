@@ -2,6 +2,7 @@ import {
   IsDateString,
   IsNotEmpty,
   IsString,
+  Matches,
   MaxLength,
   MinLength
 } from 'class-validator';
@@ -26,11 +27,12 @@ export class ValidationDto {
   @IsNotEmpty()
   countryOfBirth: string;
 
-  @ApiProperty({ example: '380989999999', description: 'Phone number' })
+  @ApiProperty({ example: '+380989999999', description: 'Phone number' })
   @IsNotEmpty()
   @IsString()
-  @MinLength(11)
-  @MaxLength(12)
+  @MinLength(13)
+  @MaxLength(13)
+  @Matches(/^([+])([0-9]{12})$/, { message: 'Incorrect phone number' })
   phone: string;
 
   @ApiProperty({ example: '1995-05-12', description: 'date of birth of user' })

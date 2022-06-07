@@ -33,7 +33,7 @@ import { UploadFileInfoDto } from './dto/upload.file.info.dto';
 import { multerOptions } from 'src/shared/helpers/multer.options';
 import { ChangePasswordDto } from './dto/change.password.dto';
 import { InputData2faDto } from './dto/input.data.2fa.dto';
-import { TurnOn2faDto } from 'src/user/dto/turn.on.2fa.dto';
+import { plainToClass } from 'class-transformer';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -55,7 +55,7 @@ export class AuthController {
   @HttpCode(200)
   @Post('login')
   @UseGuards(AuthGuard('local'))
-  async login(@GetUser() user: User): Promise<TokenDto | string> {
+  async login(@GetUser() user: User): Promise<TokenDto | number> {
     return this.authService.login(user.id);
   }
 
@@ -75,7 +75,7 @@ export class AuthController {
   }
 
   @ApiSecurity('accessToken')
-  @ApiOperation({ summary: 'generate code form email confirmation for user' })
+  @ApiOperation({ summary: 'generate code for email confirmation for user' })
   @ApiResponse({ status: 200 })
   @ApiBody({ type: GenerateEmailCodeDto })
   @HttpCode(200)
@@ -139,37 +139,34 @@ export class AuthController {
   @HttpCode(200)
   @Roles(RoleEnum.user)
   @Post('2fa')
-  @UseGuards(AuthGuard('2fa'), RolesGuard, VerifiedEmailGuard)
+  @UseGuards(AuthGuard('custom'), RolesGuard, VerifiedEmailGuard)
   async twoFactorVerification(
-    @GetUser() user: User,
     @Body() data: InputData2faDto
   ): Promise<TokenDto> {
-    return this.authService.twoFactorConfirmation(user.id, data);
+    return plainToClass(TokenDto, {
+      token: await this.authService.generateAccessToken({ id: String(data.id) })
+    });
   }
 
   @ApiSecurity('accessToken')
   @ApiOperation({ summary: 'turn on 2fa' })
   @ApiResponse({ status: 200 })
-  @ApiBody({ type: TurnOn2faDto })
   @HttpCode(200)
   @Roles(RoleEnum.user)
   @Post('turnOn2fa')
   @UseGuards(AuthGuard('jwt'), RolesGuard, VerifiedEmailGuard)
-  async turnOn2fa(
-    @GetUser() user: User,
-    @Body() data: TurnOn2faDto
-  ): Promise<void> {
-    return this.authService.twoFactorVerification(user.id, data.phone);
+  async turnOn2fa(@GetUser() user: User): Promise<void> {
+    return this.authService.twoFactorVerification(user.id);
   }
 
   @ApiSecurity('accessToken')
   @ApiOperation({ summary: 'confirm phone for 2fa' })
   @ApiResponse({ status: 200 })
-  @ApiBody({ type: TurnOn2faDto })
+  @ApiBody({ type: InputData2faDto })
   @HttpCode(200)
   @Roles(RoleEnum.user)
   @Post('confirmPhone2fa')
-  @UseGuards(AuthGuard(['jwt', '2fa']), RolesGuard, VerifiedEmailGuard)
+  @UseGuards(AuthGuard(['jwt', 'custom']), RolesGuard, VerifiedEmailGuard)
   async confirmPhone2fa(
     @GetUser() user: User,
     @Body() data: InputData2faDto

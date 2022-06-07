@@ -1,6 +1,7 @@
+import { decrypt } from 'src/shared/helpers/crypto';
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, ExtractJwt } from 'passport-jwt';
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Strategy } from 'passport-custom';
+import { Injectable, Req, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -8,28 +9,28 @@ import { Repository } from 'typeorm';
 require('dotenv').config();
 
 @Injectable()
-export class TwoFactorStrategy extends PassportStrategy(Strategy, '2fa') {
+export class TwoFactorStrategy extends PassportStrategy(Strategy) {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>
   ) {
-    super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET
-    });
+    super();
   }
 
-  async validate(payload: { code2fa: string }): Promise<User> {
+  async validate(@Req() req): Promise<User> {
     const user = await this.userRepository.findOne({
-      where: {
-        code2fa: payload.code2fa
-      }
+      id: req.body.id
     });
 
-    if (!user)
-      throw new HttpException('Invalid token', HttpStatus.UNAUTHORIZED);
+    const code = decrypt(
+      process.env.SECRET_TOKEN,
+      process.env.SECRET_IV,
+      user.code2fa
+    );
 
+    if (code !== req.body.code2fa) {
+      throw new UnauthorizedException('Login failed');
+    }
     return user;
   }
 }

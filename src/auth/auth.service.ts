@@ -66,7 +66,7 @@ export class AuthService {
     }
   }
 
-  async login(userId: number): Promise<TokenDto | string> {
+  async login(userId: number): Promise<TokenDto | number> {
     const role = await this.userRolesRepository.findOne({
       where: {
         userId,
@@ -74,9 +74,11 @@ export class AuthService {
       }
     });
 
-    if (role) {
+    const user = await this.userRepository.findOne(userId);
+
+    if (role && user['2fa']) {
       await this.twoFactorVerification(userId);
-      return 'Success';
+      return user.id;
     }
 
     return plainToClass(TokenDto, {
@@ -118,6 +120,7 @@ export class AuthService {
             status: UserStatusEnum.tier1
           }
         });
+
         const code = randomCode();
 
         const codeExpireAt = new Date();
@@ -258,7 +261,7 @@ export class AuthService {
       user.code2fa
     );
 
-    if (data.code !== code) {
+    if (data.code2fa !== code) {
       throw new BadRequestException('Two factor authentication was failed');
     }
   }
@@ -274,32 +277,34 @@ export class AuthService {
     });
   }
 
-  async twoFactorVerification(
-    userId: number,
-    phoneNumber?: string
-  ): Promise<void> {
+  async twoFactorVerification(userId: number): Promise<void> {
     try {
-      const user = await this.userRepository.findOne(userId);
+      await getManager().transaction(async (transactionEntityManager) => {
+        const user = await transactionEntityManager.findOne(User, userId);
 
-      const code = new RandExp(/^(?=.*[0-9])(?=.*[a-z]).{6}$/).gen();
+        const code = new RandExp(/^([0-9]{3})([a-z]{3})$/).gen();
 
-      const update = await this.userRepository
-        .createQueryBuilder()
-        .update(User)
-        .set({
-          code2fa: encrypt(
-            process.env.SECRET_TOKEN,
-            process.env.SECRET_IV,
-            code
-          )
-        })
-        .where({ id: userId, phone: phoneNumber ? phoneNumber : user.phone })
-        .returning(['phone'])
-        .execute();
+        const update = await transactionEntityManager
+          .createQueryBuilder()
+          .update(User)
+          .set({
+            code2fa: encrypt(
+              process.env.SECRET_TOKEN,
+              process.env.SECRET_IV,
+              code
+            )
+          })
+          .where({
+            id: userId,
+            phone: user.phone
+          })
+          .returning(['phone'])
+          .execute();
 
-      if (!update.affected) throw new Error();
+        if (!update.affected) throw new Error();
 
-      await this.smsSender.sendSMS(code, update.raw[0].phone);
+        await this.smsSender.sendSMS(code, update.raw[0].phone);
+      });
     } catch {
       throw new BadRequestException('Two factor verification was failed');
     }
