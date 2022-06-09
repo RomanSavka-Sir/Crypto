@@ -1,3 +1,6 @@
+import { InputDataBalanceDto } from './../balance/dto/input.data.balance.dto';
+import { BalanceService } from './../balance/balance.service';
+import { BalanceDto } from './../balance/dto/balance.dto';
 import { VerifiedEmailGuard } from './../shared/guards/verified.email.guard';
 import {
   Controller,
@@ -5,7 +8,8 @@ import {
   HttpCode,
   Get,
   Patch,
-  Body
+  Body,
+  Post
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
@@ -34,7 +38,10 @@ import { UserService } from './user.service';
 @UseGuards(AuthGuard('jwt'), RolesGuard, VerifiedEmailGuard)
 @Controller('user')
 export class UserController {
-  constructor(private userService: UserService) {}
+  constructor(
+    private userService: UserService,
+    private balanceService: BalanceService
+  ) {}
 
   @ApiOperation({ summary: 'get all markets for user' })
   @ApiResponse({ status: 200, type: GetMarketResponseDto })
@@ -53,6 +60,30 @@ export class UserController {
   @Get('getUser')
   async getUser(@GetUser() user: User): Promise<GetUserResponseDto> {
     return this.userService.getuser(user.id);
+  }
+
+  @ApiOperation({ summary: 'top up balance for user' })
+  @ApiResponse({ status: 200, type: BalanceDto })
+  @ApiBody({ type: InputDataBalanceDto })
+  @HttpCode(200)
+  @Post('topUpBalance')
+  async topUpMoney(
+    @GetUser() user: User,
+    @Body() data: InputDataBalanceDto
+  ): Promise<BalanceDto> {
+    return this.balanceService.topUpBalance(user.id, data);
+  }
+
+  @ApiOperation({ summary: 'withdraw balance for user' })
+  @ApiResponse({ status: 200, type: BalanceDto })
+  @ApiBody({ type: InputDataBalanceDto })
+  @HttpCode(200)
+  @Post('withdrawBalance')
+  async withdrawBalance(
+    @GetUser() user: User,
+    @Body() data: InputDataBalanceDto
+  ): Promise<BalanceDto> {
+    return this.balanceService.withdrawBalance(user.id, data);
   }
 
   @ApiOperation({ summary: 'update user' })

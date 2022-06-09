@@ -1,8 +1,9 @@
+import { BaseDTO } from 'src/shared/dto/base.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { IsDate, IsInt, IsNotEmpty, IsString } from 'class-validator';
 
-export class BalanceDto {
+export class BalanceDto extends BaseDTO {
   @Expose()
   @ApiProperty({ description: 'identifier of balance', example: 1 })
   @IsInt()

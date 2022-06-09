@@ -16,9 +16,6 @@ import { MarketsEnum } from 'src/order/enums/markets.enum';
 import { GetUserResponseDto } from './dto/get.user.response.dto';
 import { UpdateUserDto } from './dto/update.user.dto';
 import { Balance } from 'src/balance/entities/balance.entity';
-import { TurnOn2faDto } from './dto/turn.on.2fa.dto';
-import RandExp from 'randexp';
-import { encrypt } from 'src/shared/helpers/crypto';
 
 @Injectable()
 export class UserService {

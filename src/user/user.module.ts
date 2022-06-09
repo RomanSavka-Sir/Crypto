@@ -1,3 +1,4 @@
+import { BalanceModule } from './../balance/balance.module';
 import { SharedModule } from './../shared/shared.module';
 import { Currency } from './../shared/entities/currency.entity';
 import { Module } from '@nestjs/common';
@@ -12,7 +13,8 @@ import { Role } from './entities/role.entity';
 @Module({
   imports: [
     TypeOrmModule.forFeature([User, UserRole, Role, Market, Currency]),
-    SharedModule
+    SharedModule,
+    BalanceModule
   ],
   controllers: [UserController],
   providers: [UserService],
