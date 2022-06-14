@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectTwilio, TwilioClient } from 'nestjs-twilio';
 
 require('dotenv').config();
