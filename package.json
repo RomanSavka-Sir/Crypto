@@ -6,6 +6,7 @@
   "scripts": {
     "build": "nest build",
     "start:local": "nest start --watch",
+    "start": "node dist/main",
     "start:docker": "docker-compose up --build -V",
     "typeorm:cli": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "db:migration:generate": "npm run typeorm:cli -- migration:generate -n",
@@ -60,5 +61,8 @@
     "@types/passport-jwt": "^3.0.6",
     "@types/passport-local": "^1.0.34",
     "eslint": "^8.15.0"
+  },
+  "engines": {
+    "node": "16.15.0"
   }
 }
