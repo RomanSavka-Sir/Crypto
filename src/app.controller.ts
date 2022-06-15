@@ -6,7 +6,7 @@ export class AppController {
   constructor(private appService: AppService) {}
 
   @Get()
-  testConnection(): void {
+  testConnection(): string {
     return this.appService.testApplication();
   }
 }
