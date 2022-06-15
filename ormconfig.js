@@ -12,5 +12,6 @@ module.exports = {
   database: DB_NAME,
   migrations: ['src/migrations/*.ts'],
   entities: ['src/**/entities/*.entity.ts'],
-  cli: { migrationsDir: 'src/migrations' }
+  cli: { migrationsDir: 'src/migrations' },
+  options: { encrypt: false }
 };
