@@ -6,7 +6,7 @@
   "scripts": {
     "build": "nest build",
     "start:local": "NODE_ENV=local nest start --watch",
-    "start": "node dist/main",
+    "start": "npm run db:migration:run && node dist/main",
     "start:docker": "docker-compose up --build -V",
     "typeorm:cli": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
     "db:migration:generate": "npm run typeorm:cli -- migration:generate -n",
