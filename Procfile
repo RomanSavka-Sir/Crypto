@@ -1,2 +1,2 @@
 web: npm start
-release: npm run migrate
+release: run rails db:migrate
