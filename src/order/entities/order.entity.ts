@@ -1,3 +1,4 @@
+import { Currency } from './../../shared/entities/currency.entity';
 import { User } from '../../user/entities/user.entity';
 import {
   Column,
@@ -39,6 +40,13 @@ export class Order {
   @ManyToOne(() => Market, (market) => market.orders)
   @JoinColumn({ name: 'marketId' })
   market: Market;
+
+  @ManyToOne(() => Currency, (currency) => currency.orders)
+  @JoinColumn({ name: 'currencyId' })
+  currency: Currency;
+
+  @Column()
+  currencyId: string;
 
   @Column()
   marketId: string;

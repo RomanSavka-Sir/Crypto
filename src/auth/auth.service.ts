@@ -29,7 +29,6 @@ import RandExp from 'randexp';
 import { SmsSender } from 'src/shared/helpers/twilio.sms.sender';
 import { encrypt, decrypt } from 'src/shared/helpers/crypto';
 import { InputData2faDto } from './dto/input.data.2fa.dto';
-import { TurnOn2faDto } from 'src/user/dto/turn.on.2fa.dto';
 
 require('dotenv').config();
 

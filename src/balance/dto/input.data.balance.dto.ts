@@ -1,10 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsInt, IsNotEmpty, IsString } from 'class-validator';
 
 export class InputDataBalanceDto {
   @ApiProperty({ description: 'amount in cents', example: '100' })
-  @IsNumber()
+  @IsInt()
   @Transform((a) => parseInt(a.value) * 100)
   @IsNotEmpty()
   amountInCents: number;

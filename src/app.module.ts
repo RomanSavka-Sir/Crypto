@@ -25,12 +25,12 @@ import { UserModule } from './user/user.module';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
       autoLoadEntities: true,
-      logging: true,
-      ssl: process.env.NODE_ENV
-        ? {
-            rejectUnauthorized: false
-          }
-        : false
+      logging: true
+      // ssl: process.env.NODE_ENV
+      //   ? {
+      //       rejectUnauthorized: false
+      //     }
+      //   : false
     }),
     MulterModule.register({
       dest: './uploads'

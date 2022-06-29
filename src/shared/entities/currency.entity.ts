@@ -7,6 +7,7 @@ import {
   OneToMany,
   PrimaryColumn
 } from 'typeorm';
+import { Order } from 'src/order/entities/order.entity';
 
 @Entity({
   name: 'currencies'
@@ -22,6 +23,6 @@ export class Currency {
   @OneToMany(() => Balance, (balance) => balance.currency)
   balances: Balance[];
 
-  @CreateDateColumn()
-  createdAt: Date;
+  @OneToMany(() => Order, (order) => order.currency)
+  orders: Order[];
 }
