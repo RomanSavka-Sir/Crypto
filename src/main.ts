@@ -1,3 +1,4 @@
+import { TradeDto } from './order/dto/trade.dto';
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
@@ -10,6 +11,7 @@ import { UserRolesDto } from './user/dto/user.roles.dto';
 import { BalanceDto } from './balance/dto/balance.dto';
 import { UserDto } from './user/dto/user.dto';
 import { ManagerDto } from './manager/dto/manager.dto';
+import { OrderDto } from './order/dto/order.dto';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -49,7 +51,9 @@ async function bootstrap() {
       UserRolesDto,
       BalanceDto,
       UserDto,
-      ManagerDto
+      ManagerDto,
+      OrderDto,
+      TradeDto
     ]
   });
   SwaggerModule.setup('docs', app, document, {
