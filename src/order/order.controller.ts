@@ -1,3 +1,4 @@
+import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { GetOrdersResponseDto } from './dto/get.orders.response.dto';
 import {
   Controller,
@@ -7,12 +8,14 @@ import {
   HttpCode,
   Body,
   Param,
-  ParseIntPipe
+  ParseIntPipe,
+  Query
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import {
   ApiBody,
   ApiOperation,
+  ApiQuery,
   ApiResponse,
   ApiSecurity,
   ApiTags
@@ -26,7 +29,8 @@ import { User } from 'src/user/entities/user.entity';
 import { CreateOrderDto } from './dto/create.order.dto';
 import { OrderService } from './order.service';
 import { GetTradesResponseDto } from './dto/get.trades.response.dto';
-import { parseCommandLine } from 'typescript';
+import { Pagination } from 'src/shared/decorators/pagination.decorator';
+import { OrderFilterDto } from './dto/order.filter.dto';
 
 @ApiTags('order')
 @ApiSecurity('accessToken')
@@ -40,16 +44,29 @@ export class OrderController {
   @ApiResponse({ status: 200, type: GetOrdersResponseDto })
   @HttpCode(200)
   @Get('getOrders')
-  async getOrders(@GetUser() user: User): Promise<GetOrdersResponseDto> {
-    return this.orderService.getOrders(user.id);
+  async getOrders(): Promise<GetOrdersResponseDto> {
+    return this.orderService.getOrders();
   }
 
   @ApiOperation({ summary: 'get trades' })
   @ApiResponse({ status: 200, type: GetTradesResponseDto })
   @HttpCode(200)
   @Get('getTrades')
-  async getTrades(@GetUser() user: User): Promise<GetTradesResponseDto> {
-    return this.orderService.getTrades(user.id);
+  async getTrades(): Promise<GetTradesResponseDto> {
+    return this.orderService.getTrades();
+  }
+
+  @ApiOperation({ summary: 'get all orders of user' })
+  @ApiResponse({ status: 200, type: GetOrdersResponseDto })
+  @ApiQuery({ type: PaginationDto })
+  @HttpCode(200)
+  @Get('getAllOrders')
+  async getAllOrders(
+    @Pagination() pagination: PaginationDto,
+    @Query() filter: OrderFilterDto,
+    @GetUser() user: User
+  ): Promise<GetOrdersResponseDto> {
+    return this.orderService.getAllOrders(pagination, filter, user.id);
   }
 
   @ApiOperation({ summary: 'create order by user' })

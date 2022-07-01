@@ -1,3 +1,5 @@
+import { OrderFilterDto } from './dto/order.filter.dto';
+import { PaginationDto } from 'src/shared/dto/pagination.dto';
 import { BalanceService } from './../balance/balance.service';
 import { Trade } from './entities/trade.entity';
 import { OrderTypeEnum } from './enums/order.type.enum';
@@ -289,9 +291,9 @@ export class OrderService {
       .execute();
   }
 
-  async getOrders(userId: number): Promise<GetOrdersResponseDto> {
+  async getOrders(): Promise<GetOrdersResponseDto> {
     const [orders, count] = await this.orderRepository.findAndCount({
-      where: { status: OrderStatusEnum.open, userId },
+      where: { status: OrderStatusEnum.open },
       select: [
         'id',
         'type',
@@ -316,9 +318,8 @@ export class OrderService {
     );
   }
 
-  async getTrades(userId: number): Promise<GetTradesResponseDto> {
+  async getTrades(): Promise<GetTradesResponseDto> {
     const [trades, count] = await this.tradeRepository.findAndCount({
-      where: [{ makerUserId: userId }, { takerUserId: userId }],
       select: [
         'id',
         'price',
@@ -355,5 +356,84 @@ export class OrderService {
     } catch {
       throw new BadRequestException('Cancel order was failed');
     }
+  }
+
+  async getAllOrders(
+    pagination: PaginationDto,
+    filter: OrderFilterDto,
+    userId: number
+  ): Promise<GetOrdersResponseDto> {
+    const where = this.ordersFilter(filter, userId);
+    console.log(where);
+
+    const orders = await this.orderRepository.query(`
+    SELECT
+     o.id, 
+     o.type,
+     o.price,
+     o.volume,
+     o.status,
+     o."userId",
+     o."marketId",
+     o."createdAt",
+     o."updatedAt"
+    FROM orders o
+    WHERE ${where}
+    ORDER BY o."createdAt" DESC
+    OFFSET ${pagination.offset}
+    LIMIT ${pagination.limit};
+    `);
+    // const [orders, count] = await this.orderRepository.findAndCount({
+    //   where,
+    //   select: [
+    //     'id',
+    //     'type',
+    //     'price',
+    //     'volume',
+    //     'status',
+    //     'userId',
+    //     'marketId',
+    //     'currencyId',
+    //     'createdAt',
+    //     'updatedAt'
+    //   ],
+    //   skip: pagination.offset,
+    //   take: pagination.limit,
+    //   order: { createdAt: 'DESC' }
+    // });
+
+    return plainToClass(
+      GetOrdersResponseDto,
+      { count: orders.length, orders },
+      { strategy: 'excludeAll' }
+    );
+  }
+
+  ordersFilter(filter: OrderFilterDto, userId: number): string {
+    const where = [`o."userId" = ${userId}`];
+
+    if (filter.createdAtFrom)
+      where.push(`o."createdAt"  >  '${filter.createdAtFrom}'`);
+
+    if (filter.createdAtTo)
+      where.push(`o."createdAt"  <  '${filter.createdAtTo}'`);
+
+    if (filter.currencyIdFilter)
+      where.push(`o."currencyId" = '${filter.currencyIdFilter}'`);
+
+    if (filter.marketIdFilter)
+      where.push(`o."marketId" = '${filter.marketIdFilter}'`);
+
+    if (filter.statusFilter) where.push(`o.status = '${filter.statusFilter}'`);
+
+    if (filter.priceFrom) where.push(`o.price > ${filter.priceFrom}`);
+
+    if (filter.priceTo) where.push(`o.price < ${filter.priceTo}`);
+
+    if (filter.volumeFrom) where.push(`o.volume < ${filter.volumeFrom}`);
+
+    if (filter.volumeTo) where.push(`o.volume < ${filter.volumeTo}`);
+
+    return where.join(' AND ');
   }
 }
