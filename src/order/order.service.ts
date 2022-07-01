@@ -364,7 +364,6 @@ export class OrderService {
     userId: number
   ): Promise<GetOrdersResponseDto> {
     const where = this.ordersFilter(filter, userId);
-    console.log(where);
 
     const orders = await this.orderRepository.query(`
     SELECT

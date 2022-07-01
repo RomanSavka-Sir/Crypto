@@ -98,15 +98,6 @@ export class BalanceService {
     userId: number,
     currencyId: string
   ): Promise<void> {
-    console.log(
-      orderAmountInCents,
-      orderVolume,
-      orderPrice,
-      type,
-      userId,
-      currencyId
-    );
-
     await transactionEntityManager
       .createQueryBuilder()
       .update(Balance)
